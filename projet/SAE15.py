@@ -25,10 +25,15 @@ def read_file(path):
 def parse_line(line):
     linesplit = line.split(" ")
     for part in linesplit:
-        
+        pass
     
 def main(filename):
     file = read_file(filename)
-    for line in file:
-        parse_line(line)
+    for i in range(20):
+        print(file[i])
+    #for line in file:
+    #   parse_line(line)
+        
+        
+main("fichier_a_traiter.txt")
         
