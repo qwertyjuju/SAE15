@@ -22,15 +22,40 @@ def read_file(path):
         return None
     
     
-def parse_line(line):
-    linesplit = line.split(" ")
-    for part in linesplit:
-        pass
+def parse_header():
+    pass
     
+def interpret_part(part):
+    part_type = None
+    if part.count(":")==3 and part.count(".")==1:
+        part_type == "time"
+    if part.count("x") and part[:1] == "0x":
+        part_type == "hexa"
+    return part_type
+    
+    
+def interpret_line(line):
+    linetype = None
+    linesplit = line.split(" ")
+    result = [None]
+    if interpret_part(linesplit[0]) == "time":
+        linetype = "header"
+        try :
+            index = linesplit.index(">")
+        except ValueError:
+            pass
+        else:
+            result
+    if interpret_part(linesplit[0]) == "hexa":
+        linetype = "content"
+    return linetype
+        
 def main(filename):
     file = read_file(filename)
-    for i in range(20):
-        print(file[i])
+    for line in file:
+        line_type = interpret_line(line)
+        if line_type == "header":
+            
     #for line in file:
     #   parse_line(line)
         
