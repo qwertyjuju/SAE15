@@ -42,8 +42,6 @@ def parse_time(value):
     return date, date_str, time_str
 
 def parse_desc(value):
-    """
-    """
     professors = None
     groups = None
     mod = None

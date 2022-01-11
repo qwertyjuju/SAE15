@@ -5,6 +5,12 @@ Created on Thu Jan  6 09:22:55 2022
 @author: Julien
 """
 import os
+import re
+
+HEADER_CONTENT = ["time", "IP emetor", "IP receptor", "TCP flag", "seq", "ack", "window size", "length"]
+CONTENT_CONTENT = ["hexa", "number"]
+PROTOCOLS = ["IP"]
+
 
 def read_file(path):
     """
@@ -24,41 +30,72 @@ def read_file(path):
     
 def parse_header():
     pass
+
+def is_time(part):
+    """
+    
+    """
+    if part.count(":")==2 and part.count(".")==1:
+        for subpart in re.split(": |.") :
+            try:
+                int(subpart)
+            except ValueError:
+                return 0
+        return 1
+    else:
+        return 0
+    
+def is_protocol(part):
+    if part in PROTOCOLS:
+        return 1
+
+def is_comparator(part):
+    if part == ">":
+        return 1
     
 def interpret_part(part):
-    part_type = None
-    if part.count(":")==3 and part.count(".")==1:
-        part_type == "time"
+    if is_time(part):
+        return "time"
+    if is_comparator(part):
+        return "comparator"
     if part.count("x") and part[:1] == "0x":
-        part_type == "hexa"
-    return part_type
+        return "hexa"
+    
     
     
 def interpret_line(line):
     linetype = None
     linesplit = line.split(" ")
-    result = [None]
-    if interpret_part(linesplit[0]) == "time":
-        linetype = "header"
-        try :
-            index = linesplit.index(">")
-        except ValueError:
-            pass
-        else:
-            result
+    result = None
+    for part in linesplit:
+        if interpret_part(part) in HEADER_CONTENT:
+            linetype = "header"
+        result = [None]*8
+        for i in linesplit[1]:
+            result[0]=linesplit[0]
+            try :
+                index = linesplit.index(">")
+            except ValueError:
+                pass
+            else:
+                result[1]= linesplit[index-1]
+                result[2]= linesplit[index+1]
+            
     if interpret_part(linesplit[0]) == "hexa":
         linetype = "content"
-    return linetype
+    return linetype, result
         
 def main(filename):
     file = read_file(filename)
     for line in file:
-        line_type = interpret_line(line)
+        line_type, result = interpret_line(line)
         if line_type == "header":
+            print(result)
             
-    #for line in file:
-    #   parse_line(line)
-        
+"""
+header content:[time, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
+IP_frame_content: content
+"""        
         
 main("fichier_a_traiter.txt")
         
