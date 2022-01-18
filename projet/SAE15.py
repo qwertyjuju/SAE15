@@ -15,6 +15,11 @@ class HeaderDict:
     def __init__(self):
         self.index=0
         self.data={}
+        self.ipcount_list={
+            'sd':{},
+            's':{},
+            'd':{},
+        }
         
     def add_header(self,header):
         self.index+=1
@@ -27,38 +32,39 @@ class HeaderDict:
             csv_list.append(header.get_csv_format())
         return csv_list
     
-    def get_ip_count(self, iptype="all",sort=False):
-        ip_list={}
-        if iptype=="all":
+    def create_ip_count(self, iptype="sd",sort=False):
+        if iptype not in ["sd","s","d"]:
+            return None
+        if iptype=="sd":
             for header in self.data.values():
                 for ip in header.get_ips():
                     try:
-                        ip_list[ip]
+                        self.ipcount_list['sd'][ip]
                     except KeyError:
-                        ip_list[ip]=1
+                        self.ipcount_list['sd'][ip]=1
                     else:
-                        ip_list[ip]+=1
-        if iptype=="src":
+                        self.ipcount_list['sd'][ip]+=1
+        if iptype=="s":
             for header in self.data.values():
                 try:
-                    ip_list[header.get_srcip()]
+                    ip=self.ipcount_list['s'][header.get_srcip()]
                 except KeyError:
-                    ip_list[header.get_srcip()]=1
+                    self.ipcount_list['s'][header.get_srcip()]=1
                 else:
-                    ip_list[header.get_srcip()]+=1
-        if iptype=="dst":
+                    self.ipcount_list['s'][header.get_srcip()]+=1
+        if iptype=="d":
             for header in self.data.values():
                 try:
-                    ip=ip_list[header.get_dstip()]
+                    ip=self.ipcount_list['d'][header.get_dstip()]
                 except KeyError:
-                    ip_list[header.get_dstip()]=1
+                    self.ipcount_list['d'][header.get_dstip()]=1
                 else:
-                    ip_list[header.get_dstip()]+=1
+                    self.ipcount_list['d'][header.get_dstip()]+=1
         if sort=="r":
-            ip_list = sorted(ip_list.items(), key=lambda x: x[1], reverse=True)
+            self.ipcount_list = sorted(self.ipcount_list[iptype].items(), key=lambda x: x[1], reverse=True)
         if sort=="n":
-            ip_list = sorted(ip_list.items(), key=lambda x: x[1], reverse=True)
-        return ip_list
+            self.ipcount_list = sorted(self.ipcount_list[iptype].items(), key=lambda x: x[1], reverse=True)
+        return self.ipcount_list[iptype]
     
     def get_port_count(self):
         port_list={}
@@ -235,7 +241,7 @@ def main():
         if line_type == "header":
             header = Header(headers,line)
     #os.makedirs(out_repo)
-    ipcount= headers.get_ip_count("src")
+    ipcount= headers.create_ip_count("sd")
     write_json(ipcount, "result.json")
     print(ipcount)
 
