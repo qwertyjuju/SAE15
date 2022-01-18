@@ -58,9 +58,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="openable-frame-body">
-                        <div class="row" id="ipframe">
-                        </div>
+                    <div class="openable-frame-body" id="ipframe-all">
                     </div>
                 </div>
             </div>
@@ -68,10 +66,9 @@
 		<footer class="bg-darkgray2">
         </footer>
         <script>
-            /* progress bars and openable frame */
+            /* openable frame */
             var elems = document.getElementsByClassName("openable-frame")
             var openableFrames = []
-            var progressbars = document.getElementsByClassName('progress-bar');
             for (elemnb in elems){
                 try{
                     if (elems[elemnb].classList.contains("openable-frame")){
@@ -80,20 +77,6 @@
                 }
                 catch (error){
                     if (error instanceof TypeError){}
-                    else{
-                        throw error
-                    }
-                }
-            }
-            for (elementnb in progressbars){
-                try{
-                    var value = progressbars[elementnb].getAttribute("aria-valuenow")
-                    var result= "width: ".concat(value,"%")
-                    progressbars[elementnb].setAttribute("style", result)
-                }
-                catch(error){
-                    if (error instanceof TypeError){
-                    }
                     else{
                         throw error
                     }
@@ -111,16 +94,46 @@
 
             /* json data */
             var requestURL = window.location.href+"data.json";
-            console.log(requestURL);
+            var ipFrameAll = document.getElementById('ipframe-all')
+            console.log(requestURL, ipFrameAll);
             var request = new XMLHttpRequest();
             request.open('GET', requestURL);
             request.responseType = 'json';
             request.send();
             request.onload = function() {
                 var jsondata = request.response;
+                var totalIp = jsondata['_total']
                 for(element in jsondata){
-                    console.log(element)
+                    if(element!='_total'){
+                        var nb = jsondata[element]
+                        var percent = Math.ceil((nb*100)/totalIp)
+                        create_progressbar(ipFrameAll, element, percent)
+                    }
                 }
+            }
+            console.log(ipFrameAll);
+            function create_progressbar(frame, elementname, percent){
+                if(elementname==''){
+                    elementname='None'
+                }
+                var title= document.createElement("h5")
+                title.innerText= elementname
+                frame.appendChild(title)
+                var progress = document.createElement("div")
+                progress.classList.add('progress')
+                progress.classList.add('progress-margin')
+                var progressBar =document.createElement("div")
+                progressBar.classList.add('progress-bar') 
+                progressBar.classList.add('progress-bar-striped')
+                progressBar.classList.add('progress-bar-animated')
+                strpercent = "width: ".concat(percent,"%")
+                progressBar.setAttribute("style", strpercent)
+                progressBar.setAttribute("role", "progressbar")
+                progressBar.setAttribute("aria-valuemin",0)
+                progressBar.setAttribute("aria-valuemax",100)
+                progressBar.setAttribute("aria-valuenow",percent)
+                progress.appendChild(progressBar)
+                frame.appendChild(progress)
             }
         </script>
 		<script src="js/bootstrap.bundle.min.js"></script>

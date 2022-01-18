@@ -16,6 +16,13 @@ body{
 .align-right{
 	float:right;
 }
+h1,h2,h3,h4,h5,h6{
+	text-shadow: 5px 5px 5px black;
+}
+#ipframe-all{
+	width:100%;
+	height: auto;
+}
 
 
 /* Openable Frame */
@@ -37,7 +44,7 @@ body{
 	border-color: rgba(24, 22, 22, 0.61);
 }
 .openable-frame-body{
-	display:None;
+	display:none;
 	padding-left: 10px;
 	padding-right: 10px;
 }
@@ -71,4 +78,9 @@ body{
 
 .button:hover{
 	background-color: #4c9be8;
+}
+
+.progress-margin{
+	margin-top:5px;
+	margin-bottom:5px;
 }

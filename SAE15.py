@@ -26,11 +26,14 @@ class HeaderDict:
         self.data[self.index]=header
         return self.index
     
-    def get_csv_list(self):
+    def create_csv_list(self):
         csv_list=[]
         for header in self.data.values():
             csv_list.append(header.get_csv_format())
         return csv_list
+    
+    def create_json_data(self):
+        pass
     
     def create_ip_count(self, iptype="sd",sort=False):
         if iptype not in ["sd","s","d"]:
@@ -60,6 +63,10 @@ class HeaderDict:
                     self.ipcount_list['d'][header.get_dstip()]=1
                 else:
                     self.ipcount_list['d'][header.get_dstip()]+=1
+        total=0
+        for nb in self.ipcount_list[iptype].values():
+            total+=nb
+        self.ipcount_list[iptype]['_total']=total
         if sort=="r":
             self.ipcount_list = sorted(self.ipcount_list[iptype].items(), key=lambda x: x[1], reverse=True)
         if sort=="n":
@@ -188,7 +195,7 @@ def read_file(path):
             
 def write_json(obj, file):
     with open(file, "w") as f:
-        json.dump(obj,f)
+        json.dump(obj,f,indent=4)
 
             
 def create_ip(part):
@@ -241,7 +248,7 @@ def main():
         if line_type == "header":
             header = Header(headers,line)
     #os.makedirs(out_repo)
-    ipcount= headers.create_ip_count("sd")
+    ipcount= headers.create_ip_count("s")
     write_json(ipcount, "result.json")
     print(ipcount)
 
