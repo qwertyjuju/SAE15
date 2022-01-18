@@ -4,12 +4,13 @@ Created on Thu Jan  6 09:22:55 2022
 
 @author: Julien
 """
-import os
-import re
+import os, csv
+import interpreters
 
-HEADER_CONTENT = ["time", "IP emetor", "IP receptor", "TCP flag", "seq", "ack", "window size", "length"]
+HEADER_CONTENT = ["time", "ip emetor", "ip receptor", "attr"]
 CONTENT_CONTENT = ["hexa", "number"]
-PROTOCOLS = ["IP"]
+
+
 
 
 def read_file(path):
@@ -26,63 +27,74 @@ def read_file(path):
     except:
         print("Le fichier n'existe pas %s", os.path.abspath(path))
         return None
-    
-    
-def parse_header():
-    pass
-
-def is_time(part):
-    if part.count(":")==2 and part.count(".")==1:
-        for subpart in re.split(r'\W+',part) :
-            try:
-                int(subpart)
-            except ValueError:
-                return 0
-            else:
-                pass
-        return 1
+"""    
+def write_csv(path, content):
+    if os.path.exists(path):
+        with open(path, "w") as f:
+            for line in content:
+                f.write(line+"\n")
     else:
-        return 0
-    
-def is_protocol(part):
-    if part in PROTOCOLS:
-        return 1
+        with open(path, "x") as f:
+            for line in content:
+                f.write(line+"\n")
 
-def is_comparator(part):
-    if part == ">":
-        return 1
-    
-def is_hexa(part):
-    if part.count("x") and part[:1] == "0x":
-        return 1
-    
-def is_flag(part):
-    if part.lower()=="flags":
-        return 1
-
-def interpret_part(part):
-    if is_time(part):
-        return "time"
-    if is_comparator(part):
-        return "comparator"
-    if is_flag(part):
-        return "flags"
-    if is_hexa(part):
-        return "hexa"
+"""
+def write_csv(path, content):
+    with open(path, 'w') as f:
+        writer = csv.writer(f, delimiter=";")
+        for line in content:
+            writer.writerow(line)
+            
+            
+def create_ip(part):
+    splitpart= part.split(".")
+    ip = ".".join(splitpart[:-1])
+    port= splitpart[-1]
+    return ip, port
     
 def create_header(line):
     linesplit = line.split(" ")
-    attributes=[]
-    values[]
+    values=[""]*15
     for partindex,part in enumerate(linesplit):
-        part_type = interpret_part(part)
-        if part_type=="time":
-            result[0]=part
-        if part_type=="comparator":
-            result[1]= linesplit[partindex-1]
-            result[2]= linesplit[partindex+1]
-        if part_type =="flags":
-            result[3]= linesplit[partindex+1]
+        lowerpart = part.lower()
+        part_type= interpreters.interpret_part(lowerpart)
+        if part_type == "attr":
+            if lowerpart == "options":
+                options=[]
+                for i in range(partindex, len(linesplit)):
+                    if linesplit[i].find("[")!=-1:
+                        options.append(linesplit[i][1:])
+                    elif linesplit[i].find("]")!=-1:
+                        options.append(linesplit[i][:-2])
+                        break
+                    else:
+                        options.append(linesplit[i])
+                optionsstr="|".join(options)
+                values[10]=optionsstr
+            else:
+                if linesplit[partindex+1][-1] in [",",":"]:
+                    value=linesplit[partindex+1][:-1]
+                else:
+                    value=linesplit[partindex+1]
+                if lowerpart == "flags":
+                    values[6]= value
+                elif lowerpart == "seq":
+                    values[7]= value
+                elif lowerpart == "ack":
+                    values[8]= value
+                elif lowerpart == "win":
+                    values[9]= value
+                elif lowerpart == "length":
+                    values[11]= value
+        else:
+            if part_type=="time":
+                values[0]=part
+            if part_type=="protocol":
+                values[1]=part
+            if part_type=="comparator":
+                values[2],values[3]=create_ip(linesplit[partindex-1])
+                values[4],values[5]=create_ip(linesplit[partindex+1][:-1])
+    return values
     
 def interpret_line(line, nbtest=2):
     linetype = None
@@ -90,7 +102,7 @@ def interpret_line(line, nbtest=2):
     header_count=0
     content_count=0
     for testnb in range(nbtest):
-        part_type = interpret_part(linesplit[testnb])
+        part_type = interpreters.interpret_part(linesplit[testnb].lower())
         if part_type in HEADER_CONTENT:
             header_count+=1
         if part_type in CONTENT_CONTENT:
@@ -103,15 +115,23 @@ def interpret_line(line, nbtest=2):
         
 def main(filename):
     file = read_file(filename)
+    i=0
+    headers=[]
     for line in file:
         line_type = interpret_line(line)
         if line_type == "header":
-            create_header(line)
+            header = create_header(line)
+            print(header)
+            headers.append(header)
+            i+=1
+    write_csv("result.csv", headers)
+    print(i)
+            
             
 """
-header content:[time, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
+header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
 IP_frame_content: content
 """        
         
-main("fichier_a_traiter.txt")
+main("fichier_a_traiter2.txt")
         
