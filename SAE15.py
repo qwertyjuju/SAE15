@@ -5,12 +5,12 @@ Created on Thu Jan  6 09:22:55 2022
 @author: Julien
 """
 
-import os, copy, json
+import os, copy, json, shutil
 import interpreters
 #import openpyxl as xl
 
 
-TESTING =1
+TESTING =0
 
 class HeaderDict:
     def __init__(self):
@@ -31,6 +31,7 @@ class HeaderDict:
     
     def create_csv_list(self):
         csv_list=[]
+        csv_list.append(";".join(Header.header_content.keys()))
         for header in self.data.values():
             csv_list.append(header.get_csv_format())
         return csv_list
@@ -96,14 +97,19 @@ class HeaderDict:
             try:
                 self.ipinfo[srcip]
             except KeyError:
-                self.ipinfo[srcip]={}
+                self.ipinfo[srcip] = {}
             try:
                 self.ipinfo[srcip][dstip]
             except KeyError:
-                self.ipinfo[srcip][dstip]=1
+                self.ipinfo[srcip][dstip] = 1
             else:
-                self.ipinfo[srcip][dstip]+=1
-                    
+                self.ipinfo[srcip][dstip] += 1
+        for srcip, ipinfo in self.ipinfo.items():
+            total=0
+            for nb in ipinfo.values():
+                total += nb
+            ipinfo['_total'] = total
+
     def get_nb_headers(self):
         return len(self.data)
     
@@ -243,38 +249,48 @@ def create_ip(part):
 def interpret_line(line, nbtest=2):
     linetype = None
     linesplit = line.split(" ")
-    header_count = 0
-    content_count = 0
-    for testnb in range(nbtest):
-        part_type = interpreters.interpret_part(linesplit[testnb].lower())
-        if part_type in ["time", "ip emetor", "ip receptor", "attr"]:
-            header_count += 1
-        if part_type in ["hexa", "number"]:
-            content_count += 1
-    if header_count> content_count:
-        linetype = "header"
-    if content_count> header_count:
-        linetype = "content"
+    if len(linesplit)>1:
+        header_count = 0
+        content_count = 0
+        for testnb in range(nbtest):
+            part_type = interpreters.interpret_part(linesplit[testnb].lower())
+            if part_type in ["time", "ip emetor", "ip receptor", "attr"]:
+                header_count += 1
+            if part_type in ["hexa", "number"]:
+                content_count += 1
+        if header_count> content_count:
+            linetype = "header"
+        if content_count> header_count:
+            linetype = "content"
     return linetype
 
 def user_input():
-    filename=None
-    out_repo= None
+    filename = None
+    out_rep = None
     while not filename:
-        filename=str(input("Please enter wich file you want to parse:"))
+        filename=str(input("Please enter wich file you want to parse (default: fichier_a_traiter.txt):")or "fichier_a_traiter.txt")
         if not os.path.exists(filename):
             filename=None
-    while not out_repo:
-        out_repo=str(input("Please enter a new repository name for results:"))
-        if os.path.exists(out_repo):
-            out_repo=None
-    return filename, out_repo
+    while not out_rep:
+        out_rep=str(input("Please enter a new repository name for results (default: results):") or"results" )
+        if any(i in out_rep for i in ["/","."]):
+            out_rep=None
+    return filename, out_rep
 
 def main():
     if TESTING:
         filename="fichier_a_traiter.txt"
+        out_rep="results"
     else:
-        filename, out_repo= user_input()
+        filename, out_rep= user_input()
+    htmldir=out_rep+"/html"
+    jsondir=htmldir+"/result.json"
+    csvdir=out_rep+"/result.csv"
+    if os.path.exists(out_rep):
+        shutil.rmtree(out_rep)
+        os.mkdir(out_rep)
+    else:
+        os.mkdir(out_rep)
     file = read_file(filename)
     headers=HeaderDict()
     for line in file:
@@ -282,15 +298,13 @@ def main():
         if line_type == "header":
             Header(headers,line)
     #os.makedirs(out_repo)
+    shutil.copytree("html skeleton", htmldir)
     json_data= headers.create_json()
-    write_json(json_data, "result.json")
+    write_json(json_data, jsondir)
     csv_data = headers.create_csv_list()
     print(csv_data)
-    write_csv(csv_data,"result.csv")
+    write_csv(csv_data,csvdir)
     print(json_data)
-
-
-
 
 """
 header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]

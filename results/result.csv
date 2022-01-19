@@ -1,3 +1,4 @@
+time;protocol;ip src;src port;ip dst;dst port;flags;seq;ack;options;length
 11:42:04.766656;IP;BP-Linux8;ssh;192.168.190.130;;[P.];2243505564:2243505672;1972915080;options|nop,nop,TS|val|102917262|ecr|377952805;108
 11:42:04.766694;IP;BP-Linux8;ssh;192.168.190.130;;[P.];108:144;1;options|nop,nop,TS|val|102917262|ecr|377952805;36
 11:42:04.766723;IP;BP-Linux8;ssh;192.168.190.130;;[P.];144:252;1;options|nop,nop,TS|val|102917262|ecr|377952805;108
