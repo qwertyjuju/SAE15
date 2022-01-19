@@ -68,7 +68,7 @@ class HeaderDict:
         self.ipcount_list[iptype]['_total']=total
         return self.ipcount_list[iptype]
     
-    def get_port_count(self):
+    def create_port_count(self):
         for header in self.data.values():
             for port in header.get_ports():
                 try:
@@ -98,6 +98,9 @@ class HeaderDict:
     
     def get_ipcount(self):
         return self.ipcount_list
+    
+    def get_ipinfo(self):
+        return self.ipinfo
         
 
 class Header:
@@ -170,7 +173,7 @@ class Header:
     
     def get_values(self):
         return self.data.values()
-    
+
     def get_csv_format(self):
         return ';'.join(self.data.values())
     
@@ -252,7 +255,9 @@ def create_json(headerdict):
     headerdict.create_ip_count("sd")
     headerdict.create_ip_count("s")
     headerdict.create_ip_count("d")
+    headerdict.create_ip_info()
     data['ip_count']= headerdict.get_ipcount()
+    data['ip_info']= headerdict.get_ipinfo()
     return data
 
 
