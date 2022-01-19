@@ -7,10 +7,14 @@ Created on Thu Jan  6 09:22:55 2022
 
 import os, copy, json, shutil
 import interpreters
-#import openpyxl as xl
-
-
-TESTING =0
+import openpyxl as xl
+try:
+    import openpyxl
+except ModuleNotFoundError:
+    XL=0
+    print("openpyxl module not found can't create excel")
+else:
+    XL=1
 
 class HeaderDict:
     def __init__(self):
@@ -118,6 +122,9 @@ class HeaderDict:
     
     def get_ipinfo(self):
         return self.ipinfo
+    
+    def get_data(self):
+        return self.data
         
 
 class Header:
@@ -278,33 +285,34 @@ def user_input():
     return filename, out_rep
 
 def main():
-    if TESTING:
-        filename="fichier_a_traiter.txt"
-        out_rep="results"
-    else:
-        filename, out_rep= user_input()
+    filename, out_rep= user_input()
     htmldir=out_rep+"/html"
     jsondir=htmldir+"/result.json"
     csvdir=out_rep+"/result.csv"
+    print("creating directories...")
     if os.path.exists(out_rep):
         shutil.rmtree(out_rep)
         os.mkdir(out_rep)
     else:
         os.mkdir(out_rep)
+    shutil.copytree("html skeleton", htmldir)
+    print("reading file...")
     file = read_file(filename)
+    print("creating header dict...")
     headers=HeaderDict()
+    print("creating headers...")
     for line in file:
         line_type = interpret_line(line)
         if line_type == "header":
             Header(headers,line)
-    #os.makedirs(out_repo)
-    shutil.copytree("html skeleton", htmldir)
+    print("creating json data...")
     json_data= headers.create_json()
+    print("writing json data...")
     write_json(json_data, jsondir)
+    print("creating csv data...")
     csv_data = headers.create_csv_list()
-    print(csv_data)
+    print("writing csv data...")
     write_csv(csv_data,csvdir)
-    print(json_data)
 
 """
 header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
