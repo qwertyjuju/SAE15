@@ -160,21 +160,26 @@
                 }
             }
 
-            /* json data */
+            /* get json data */
             var requestURL = window.location.href+"data.json";
-            var ipFrameAll = document.getElementById('ipframe-all')
-            var ipFrameSrc = document.getElementById('ipframe-src')
-            var ipFrameDst = document.getElementById('ipframe-dst')
-            console.log(requestURL, ipFrameAll);
+            var jsondata= null
             var request = new XMLHttpRequest();
             request.open('GET', requestURL);
             request.responseType = 'json';
             request.send();
             request.onload = function() {
-                var jsondata = request.response;
-                var ipSrcDst = jsondata['ip_count']['sd']
-                var ipSrc = jsondata['ip_count']['s']
-                var ipDst = jsondata['ip_count']['d']
+                jsondata = request.response;
+                init_content(jsondata['ip_count'])
+            }
+
+            /* init ip count content from json data */
+            function init_content(ipcount){
+                var ipFrameAll = document.getElementById('ipframe-all')
+                var ipFrameSrc = document.getElementById('ipframe-src')
+                var ipFrameDst = document.getElementById('ipframe-dst')
+                var ipSrcDst = ipcount['sd']
+                var ipSrc = ipcount['s']
+                var ipDst = ipcount['d']
                 var totalIp = ipSrcDst['_total']
                 for(element in ipSrcDst){
                     if(element!='_total'){
@@ -187,8 +192,6 @@
                         create_progressbar(ipFrameAll, title, percent)
                     }
                 }
-                console.log(t)
-                var t = 0
                 totalIp = ipSrc['_total']
                 for(element in ipSrc){
                     if(element!='_total'){
@@ -214,6 +217,15 @@
                     }
                 }
             }
+            /* generate ip info page */
+            function generate_ipinfo(ipinfo){
+                var section = document.getElementById('adresses-IP')
+                for (elem in ipinfo){
+
+                }
+            }
+
+            /* Progress Bar */
             function create_progressbar(frame, titlestr, percent){
                 var title= document.createElement("h5")
                 title.innerText= titlestr
@@ -234,6 +246,7 @@
                 progress.appendChild(progressBar)
                 frame.appendChild(progress)
             }
+
         </script>
 		<script src="js/bootstrap.bundle.min.js"></script>
 		<script src="js/prism.js" data-manual></script>
