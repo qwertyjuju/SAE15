@@ -2,6 +2,14 @@ body{
 	font-family:"8-bit_operator_8bold";
 }
 
+.page{
+	display:none;
+}
+
+.active{
+	display: block;
+}
+
 .title{
 	font-size: 5vw;
 	text-shadow: -5px -5px rgb(143, 143, 143), 5px 5px rgb(34, 34, 34), -5px 0 5px #000;
@@ -18,10 +26,6 @@ body{
 }
 h1,h2,h3,h4,h5,h6{
 	text-shadow: 5px 5px 5px black;
-}
-#ipframe-all{
-	width:100%;
-	height: auto;
 }
 
 
@@ -83,4 +87,8 @@ h1,h2,h3,h4,h5,h6{
 .progress-margin{
 	margin-top:5px;
 	margin-bottom:5px;
+}
+
+.bg-darkgray{
+	background-color: #2b2b2b;
 }

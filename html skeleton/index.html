@@ -16,7 +16,7 @@
 					<img class="title-img" src="img/index.jpg">
 				</div>
 				<div class="col-4">
-					<h1 class="title">Résultats TCPDUMP</h1>
+					<h1 class="title" id="title">Résultats TCPDUMP</h1>
 				</div>
 			</div>
 		</header>
@@ -29,43 +29,111 @@
               <div class="collapse navbar-collapse" id="navbarColor01">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="#">Acceuil
+                        <a class="nav-link active" href="javascript:setPage('acceuil')">Acceuil
                         <span class="visually-hidden">(current)</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">adresses IP</a>
+                        <a class="nav-link" href="javascript:setPage('adresses-IP')">adresses IP</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">Ports</a>
+                        <a class="nav-link" href="javascript:setPage('ports')">Ports</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">A propos</a>
+                        <a class="nav-link" href="javascript:setPage('apropos')">A propos</a>
                     </li>
                 </ul>
             </div>
         </nav>
-        <div class="container">
-            <div class="row">
-                <div class="openable-frame">
-                    <div class="frame-title">
-                        <div class="row">
-                            <div class="col-6">
-                                <h1>Compteur adresses IP</h1>
-                            </div>
-                            <div class="col-6">
-                                <button class="button align-right" onclick="openframe(0)">-/+</button>
+        <section class="page" id="acceuil" >
+            <div class="container">
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP Source et destinations</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(0)">-/+</button>
+                                </div>
                             </div>
                         </div>
+                        <div class="openable-frame-body" id="ipframe-all">
+                        </div>
                     </div>
-                    <div class="openable-frame-body" id="ipframe-all">
+                </div>
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP Source</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(1)">-/+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="openable-frame-body" id="ipframe-src">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP destinations</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(2)">-/+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="openable-frame-body" id="ipframe-dst">
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-		<footer class="bg-darkgray2">
+        </section>
+        <section class="page" id="adresses-IP">
+        </section>
+        <section class="page" id="ports">
+        </section>
+        <section class="page" id="apropos">
+        </section>
+		<footer class="bg-darkgray">
+            <a href="#title">Retour haut de page</a>
         </footer>
         <script>
+            /* sections */
+            var sectionelems = document.getElementsByClassName("page")
+            var pages = {}
+            var activepage= null
+            for (elemnb in sectionelems){
+                try{
+                    if (sectionelems[elemnb].classList.contains("page")){
+                        pages[sectionelems[elemnb].getAttribute("id")]=sectionelems[elemnb]
+                        if (elemnb==0){
+                            pages[sectionelems[elemnb].getAttribute("id")].classList.add('active')
+                            activepage=sectionelems[elemnb].getAttribute("id")
+                        }
+                    }
+                }
+                catch (error){
+                    if (error instanceof TypeError){}
+                    else{
+                        throw error
+                    }
+                }
+            }
+            function setPage(pagename){
+                pages[activepage].classList.remove('active')
+                activepage=pagename
+                pages[activepage].classList.add('active')
+            }
+
             /* openable frame */
             var elems = document.getElementsByClassName("openable-frame")
             var openableFrames = []
@@ -95,6 +163,8 @@
             /* json data */
             var requestURL = window.location.href+"data.json";
             var ipFrameAll = document.getElementById('ipframe-all')
+            var ipFrameSrc = document.getElementById('ipframe-src')
+            var ipFrameDst = document.getElementById('ipframe-dst')
             console.log(requestURL, ipFrameAll);
             var request = new XMLHttpRequest();
             request.open('GET', requestURL);
@@ -102,22 +172,49 @@
             request.send();
             request.onload = function() {
                 var jsondata = request.response;
-                var totalIp = jsondata['_total']
-                for(element in jsondata){
+                var ipSrcDst = jsondata['ip_count']['sd']
+                var ipSrc = jsondata['ip_count']['s']
+                var ipDst = jsondata['ip_count']['d']
+                var totalIp = ipSrcDst['_total']
+                for(element in ipSrcDst){
                     if(element!='_total'){
-                        var nb = jsondata[element]
-                        var percent = Math.ceil((nb*100)/totalIp)
-                        create_progressbar(ipFrameAll, element, percent)
+                        var nb = ipSrcDst[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameAll, title, percent)
+                    }
+                }
+                totalIp = ipSrc['_total']
+                for(element in ipSrc){
+                    if(element!='_total'){
+                        var nb = ipSrc[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameSrc, title, percent)
+                    }
+                }
+                totalIp = ipDst['_total']
+                for(element in ipDst){
+                    if(element!='_total'){
+                        var nb = ipDst[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameDst, title, percent)
                     }
                 }
             }
-            console.log(ipFrameAll);
-            function create_progressbar(frame, elementname, percent){
-                if(elementname==''){
-                    elementname='None'
-                }
+            function create_progressbar(frame, titlestr, percent){
                 var title= document.createElement("h5")
-                title.innerText= elementname
+                title.innerText= titlestr
                 frame.appendChild(title)
                 var progress = document.createElement("div")
                 progress.classList.add('progress')

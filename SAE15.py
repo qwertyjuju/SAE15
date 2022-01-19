@@ -20,6 +20,8 @@ class HeaderDict:
             's':{},
             'd':{},
         }
+        self.port_list={}
+        self.ipinfo={}
         
     def add_header(self,header):
         self.index+=1
@@ -32,10 +34,7 @@ class HeaderDict:
             csv_list.append(header.get_csv_format())
         return csv_list
     
-    def create_json_data(self):
-        pass
-    
-    def create_ip_count(self, iptype="sd",sort=False):
+    def create_ip_count(self, iptype="sd"):
         if iptype not in ["sd","s","d"]:
             return None
         if iptype=="sd":
@@ -67,25 +66,38 @@ class HeaderDict:
         for nb in self.ipcount_list[iptype].values():
             total+=nb
         self.ipcount_list[iptype]['_total']=total
-        if sort=="r":
-            self.ipcount_list = sorted(self.ipcount_list[iptype].items(), key=lambda x: x[1], reverse=True)
-        if sort=="n":
-            self.ipcount_list = sorted(self.ipcount_list[iptype].items(), key=lambda x: x[1], reverse=True)
         return self.ipcount_list[iptype]
     
     def get_port_count(self):
-        port_list={}
         for header in self.data.values():
             for port in header.get_ports():
                 try:
-                    port_list[port]
+                    self.port_list[port]
                 except KeyError:
-                    port_list[port]=1
+                    self.port_list[port]=1
                 else:
-                    port_list[port]+=1
+                    self.port_list[port]+=1
+                    
+    def create_ip_info(self):
+        for header in self.data.values():
+            srcip=header.get_srcip()
+            dstip=header.get_dstip()
+            try:
+                self.ipinfo[srcip]
+            except KeyError:
+                self.ipinfo[srcip]={}
+            try:
+                self.ipinfo[srcip][dstip]
+            except KeyError:
+                self.ipinfo[srcip][dstip]=1
+            else:
+                self.ipinfo[srcip][dstip]+=1
                     
     def get_nb_headers(self):
         return len(self.data)
+    
+    def get_ipcount(self):
+        return self.ipcount_list
         
 
 class Header:
@@ -235,6 +247,14 @@ def user_input():
             out_repo=None
     return filename, out_repo
 
+def create_json(headerdict):
+    data={}
+    headerdict.create_ip_count("sd")
+    headerdict.create_ip_count("s")
+    headerdict.create_ip_count("d")
+    data['ip_count']= headerdict.get_ipcount()
+    return data
+
 
 def main():
     if TESTING:
@@ -246,11 +266,11 @@ def main():
     for line in file:
         line_type = interpret_line(line)
         if line_type == "header":
-            header = Header(headers,line)
+            Header(headers,line)
     #os.makedirs(out_repo)
-    ipcount= headers.create_ip_count("s")
-    write_json(ipcount, "result.json")
-    print(ipcount)
+    json_data= create_json(headers)
+    write_json(json_data, "result.json")
+    print(json_data)
 
 
 
