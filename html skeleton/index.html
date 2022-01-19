@@ -45,8 +45,8 @@
                 </ul>
             </div>
         </nav>
-        <section class="page" id="acceuil" >
-            <div class="container">
+        <div class="container">
+            <section class="page" id="acceuil" >
                 <div class="row">
                     <div class="openable-frame">
                         <div class="frame-title">
@@ -95,14 +95,14 @@
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-        <section class="page" id="adresses-IP">
-        </section>
-        <section class="page" id="ports">
-        </section>
-        <section class="page" id="apropos">
-        </section>
+            </section>
+            <section class="page" id="adresses-IP">
+            </section>
+            <section class="page" id="ports">
+            </section>
+            <section class="page" id="apropos">
+            </section>
+        </div>
 		<footer class="bg-darkgray">
             <a href="#title">Retour haut de page</a>
         </footer>
@@ -170,6 +170,7 @@
             request.onload = function() {
                 jsondata = request.response;
                 init_content(jsondata['ip_count'])
+                generate_ipinfo(jsondata['ip_info'])
             }
 
             /* init ip count content from json data */
@@ -220,12 +221,32 @@
             /* generate ip info page */
             function generate_ipinfo(ipinfo){
                 var section = document.getElementById('adresses-IP')
+                console.log(section)
                 for (elem in ipinfo){
-
+                    create_frame(section, elem, ipinfo[elem])
                 }
             }
 
-            /* Progress Bar */
+            /* frame creation */
+            function create_frame(section, frametitle, content){
+                var row = document.createElement("div")
+                row.classList.add("row")
+                var frame = document.createElement("div")
+                frame.classList.add("frame")
+                var frameTitle = document.createElement("div")
+                frameTitle.classList.add("frame-title")
+                var frameBody = document.createElement("div")
+                frameBody.classList.add("frame-body")
+                var title = document.createElement("div")
+                title.classList.add("h4")
+                title.innerText=frametitle
+                frameTitle.appendChild(title)
+                frame.appendChild(frameTitle)
+                row.appendChild(frame)
+                section.appendChild(row)
+            }
+
+            /* Progress Bar creation */
             function create_progressbar(frame, titlestr, percent){
                 var title= document.createElement("h5")
                 title.innerText= titlestr
