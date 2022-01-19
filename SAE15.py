@@ -34,6 +34,16 @@ class HeaderDict:
             csv_list.append(header.get_csv_format())
         return csv_list
     
+    def create_json(self):
+        data={}
+        self.create_ip_count("sd")
+        self.create_ip_count("s")
+        self.create_ip_count("d")
+        self.create_ip_info()
+        data['ip_count']= self.ipcount_list
+        data['ip_info']= self.ipinfo
+        return data
+    
     def create_ip_count(self, iptype="sd"):
         if iptype not in ["sd","s","d"]:
             return None
@@ -208,15 +218,24 @@ def read_file(path):
         print("Le fichier n'existe pas %s", os.path.abspath(path))
         return None
             
-def write_json(obj, file):
-    with open(file, "w") as f:
+def write_json(obj, path):
+    with open(path, "w") as f:
         json.dump(obj,f,indent=4)
+        
+def write_csv(content, path):
+    with open(path, 'w') as f:
+        for line in content:
+            f.write(line+'\n')
 
             
 def create_ip(part):
     splitpart= part.split(".")
-    ip = ".".join(splitpart[:-1])
-    port= splitpart[-1]
+    if len(splitpart)>1:
+        ip = ".".join(splitpart[:-1])
+        port= splitpart[-1]
+    else:
+        ip=part
+        port=""
     return ip, port
 
 
@@ -250,17 +269,6 @@ def user_input():
             out_repo=None
     return filename, out_repo
 
-def create_json(headerdict):
-    data={}
-    headerdict.create_ip_count("sd")
-    headerdict.create_ip_count("s")
-    headerdict.create_ip_count("d")
-    headerdict.create_ip_info()
-    data['ip_count']= headerdict.get_ipcount()
-    data['ip_info']= headerdict.get_ipinfo()
-    return data
-
-
 def main():
     if TESTING:
         filename="fichier_a_traiter.txt"
@@ -273,8 +281,11 @@ def main():
         if line_type == "header":
             Header(headers,line)
     #os.makedirs(out_repo)
-    json_data= create_json(headers)
+    json_data= headers.create_json()
     write_json(json_data, "result.json")
+    csv_data = headers.create_csv_list()
+    print(csv_data)
+    write_csv(csv_data,"result.csv")
     print(json_data)
 
 
