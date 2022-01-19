@@ -7,9 +7,8 @@ Created on Thu Jan  6 09:22:55 2022
 
 import os, copy, json, shutil
 import interpreters
-import openpyxl as xl
 try:
-    import openpyxl
+    import openpyxl as xl
 except ModuleNotFoundError:
     XL=0
     print("openpyxl module not found can't create excel")
@@ -123,8 +122,8 @@ class HeaderDict:
     def get_ipinfo(self):
         return self.ipinfo
     
-    def get_data(self):
-        return self.data
+    def get_headers(self):
+        return self.data.values()
         
 
 class Header:
@@ -201,6 +200,9 @@ class Header:
     def get_csv_format(self):
         return ';'.join(self.data.values())
     
+    def get_values(self):
+        return self.data.values()
+    
     def __getitem__(self, key):
         if key not in self.data.keys():
             return None
@@ -233,6 +235,9 @@ def read_file(path):
         return None
             
 def write_json(obj, path):
+    """
+    write json file
+    """
     with open(path, "w") as f:
         json.dump(obj,f,indent=4)
         
@@ -241,8 +246,23 @@ def write_csv(content, path):
         for line in content:
             f.write(line+'\n')
 
+def write_xl(headers, path):
+    """
+    creates excel file
+    """
+    wb = xl.Workbook()
+    ws1 = wb.active
+    ws1.title="headers"
+    for row, header in enumerate(headers.get_headers(), start=1):
+        for col,value in enumerate(header.get_values(), start=1):
+            ws1.cell(row,col).value=value
+    wb.save(path)
+            
             
 def create_ip(part):
+    """
+    returns ip adress and port from string
+    """
     splitpart= part.split(".")
     if len(splitpart)>1:
         ip = ".".join(splitpart[:-1])
@@ -254,6 +274,9 @@ def create_ip(part):
 
 
 def interpret_line(line, nbtest=2):
+    """
+    interprets line, returns if line is header or content
+    """
     linetype = None
     linesplit = line.split(" ")
     if len(linesplit)>1:
@@ -272,6 +295,10 @@ def interpret_line(line, nbtest=2):
     return linetype
 
 def user_input():
+    """
+    gets input from user. returns filename to parse, and repertory 
+    for saving results
+    """
     filename = None
     out_rep = None
     while not filename:
@@ -289,6 +316,7 @@ def main():
     htmldir=out_rep+"/html"
     jsondir=htmldir+"/result.json"
     csvdir=out_rep+"/result.csv"
+    xldir=out_rep+"/result.xlsx"
     print("creating directories...")
     if os.path.exists(out_rep):
         shutil.rmtree(out_rep)
@@ -313,6 +341,10 @@ def main():
     csv_data = headers.create_csv_list()
     print("writing csv data...")
     write_csv(csv_data,csvdir)
+    if XL:
+        print("writing excel...")
+        write_xl(headers, xldir)
+    print("End, result files put in repertory:", out_rep)
 
 """
 header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
