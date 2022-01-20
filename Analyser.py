@@ -365,12 +365,6 @@ def main():
         print("writing excel...")
         write_xl(headers, xldir)
     print("End, result files put in repertory:", out_rep)
-    input("press enter to finish...")
-
-"""
-header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
-IP_frame_content: content
-"""        
+    input("press enter to finish...")    
         
 main()
-        
