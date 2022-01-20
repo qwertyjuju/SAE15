@@ -12,3 +12,4 @@ Programme analysant un fichier provenant d'une capture tcpdump
 - ajouter des graphes excel pour chaque IP source
 - finir commentaires
 - gestion des erreurs
+- interface graphique avec pyQt
