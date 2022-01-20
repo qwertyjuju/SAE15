@@ -13,7 +13,7 @@ except ModuleNotFoundError:
     XL=0
     print("openpyxl module not found can't create excel")
 else:
-    from openpyxl.chart import BarChart, Series, Reference
+    from openpyxl.chart import BarChart, Reference
     XL=1
 
 class HeaderDict:
@@ -207,9 +207,6 @@ class Header:
     def get_csv_format(self):
         return ';'.join(self.data.values())
     
-    def get_values(self):
-        return self.data.values()
-    
     def __getitem__(self, key):
         if key not in self.data.keys():
             return None
@@ -368,6 +365,7 @@ def main():
         print("writing excel...")
         write_xl(headers, xldir)
     print("End, result files put in repertory:", out_rep)
+    input("press enter to finish...")
 
 """
 header content:[time, protocol, IP emetor, IP receptor, TCP flag, seq, ack, window size, length]
