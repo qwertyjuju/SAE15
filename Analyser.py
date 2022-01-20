@@ -300,7 +300,6 @@ def create_ipws(wb, ip, dstips):
     chart.add_data(data)
     chart.set_categories(ips)
     ws.add_chart(chart, "D1")
-    pass
             
 def create_ip(part):
     """
