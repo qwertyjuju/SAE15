@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <title>Résultats tcpdump</title>
+        <link rel="icon" href="img/icon2.jpg">
+		<link rel="stylesheet" href="css/fonts.css">
+		<link rel="stylesheet" href="css/bootstrap.css">
+		<link rel="stylesheet" href="css/sitecss.css">
+        <script src="js/jquery.min.js"></script>
+    </head>
+    <body>
+		<header>
+			<div class="row">
+				<div class="col-4">
+					<img class="title-img" src="img/index.jpg">
+				</div>
+				<div class="col-4">
+					<h1 class="title" id="title">TCPDUMP Analyser results</h1>
+				</div>
+			</div>
+		</header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container-fluid">
+              <a class="navbar-brand" href="#">Navbar</a>
+              <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01" aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+              </button>
+              <div class="collapse navbar-collapse" id="navbarColor01">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="javascript:setPage('acceuil')">Acceuil
+                        <span class="visually-hidden">(current)</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:setPage('adresses-IP')">adresses IP</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:setPage('ports')">Ports</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:setPage('apropos')">A propos</a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container">
+            <section class="page" id="acceuil" >
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP Source et destinations</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(0)">-/+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="openable-frame-body" id="ipframe-all">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP Source</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(1)">-/+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="openable-frame-body" id="ipframe-src">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="openable-frame">
+                        <div class="frame-title">
+                            <div class="row">
+                                <div class="col-9">
+                                    <h1>Compteur adresses IP destinations</h1>
+                                </div>
+                                <div class="col-3">
+                                    <button class="button align-right" onclick="openframe(2)">-/+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="openable-frame-body" id="ipframe-dst">
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section class="page" id="adresses-IP">
+            </section>
+            <section class="page" id="ports">
+            </section>
+            <section class="page" id="apropos">
+            </section>
+        </div>
+		<footer class="bg-darkgray">
+            <a href="#title">Retour haut de page</a>
+        </footer>
+        <script>
+            /* sections */
+            var sectionelems = document.getElementsByClassName("page")
+            var pages = {}
+            var activepage= null
+            for (elemnb in sectionelems){
+                try{
+                    if (sectionelems[elemnb].classList.contains("page")){
+                        pages[sectionelems[elemnb].getAttribute("id")]=sectionelems[elemnb]
+                        if (elemnb==0){
+                            pages[sectionelems[elemnb].getAttribute("id")].classList.add('active')
+                            activepage=sectionelems[elemnb].getAttribute("id")
+                        }
+                    }
+                }
+                catch (error){
+                    if (error instanceof TypeError){}
+                    else{
+                        throw error
+                    }
+                }
+            }
+            function setPage(pagename){
+                pages[activepage].classList.remove('active')
+                activepage=pagename
+                pages[activepage].classList.add('active')
+            }
+
+            /* openable frame */
+            var elems = document.getElementsByClassName("openable-frame")
+            var openableFrames = []
+            for (elemnb in elems){
+                try{
+                    if (elems[elemnb].classList.contains("openable-frame")){
+                        openableFrames.push(elems[elemnb])
+                    }
+                }
+                catch (error){
+                    if (error instanceof TypeError){}
+                    else{
+                        throw error
+                    }
+                }
+            }
+            openableFrames[0].getElementsByClassName("openable-frame-body")[0].classList.add("active");
+            function openframe(i){
+                if(openableFrames[i].getElementsByClassName("openable-frame-body")[0].classList.contains("active")){
+                    openableFrames[i].getElementsByClassName("openable-frame-body")[0].classList.remove("active");
+                }
+                else{
+                    openableFrames[i].getElementsByClassName("openable-frame-body")[0].classList.add("active");
+                }
+            }
+
+            /* get json data */
+            var requestURL = window.location.href+"result.json";
+            var jsondata= null
+            var request = new XMLHttpRequest();
+            request.open('GET', requestURL);
+            request.responseType = 'json';
+            request.send();
+            request.onload = function() {
+                jsondata = request.response;
+                init_content(jsondata['ip_count'])
+                generate_ipinfo(jsondata['ip_info'])
+            }
+
+            /* init ip count content from json data */
+            function init_content(ipcount){
+                var ipFrameAll = document.getElementById('ipframe-all')
+                var ipFrameSrc = document.getElementById('ipframe-src')
+                var ipFrameDst = document.getElementById('ipframe-dst')
+                var ipSrcDst = ipcount['sd']
+                var ipSrc = ipcount['s']
+                var ipDst = ipcount['d']
+                var totalIp = ipSrcDst['_total']
+                for(element in ipSrcDst){
+                    if(element!='_total'){
+                        var nb = ipSrcDst[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameAll, title, percent)
+                    }
+                }
+                totalIp = ipSrc['_total']
+                for(element in ipSrc){
+                    if(element!='_total'){
+                        var nb = ipSrc[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameSrc, title, percent)
+                    }
+                }
+                totalIp = ipDst['_total']
+                for(element in ipDst){
+                    if(element!='_total'){
+                        var nb = ipDst[element]
+                        var percent =(nb*100)/totalIp
+                        if (element==''){
+                            element='None'
+                        }
+                        var title=element.concat(": ",nb)
+                        create_progressbar(ipFrameDst, title, percent)
+                    }
+                }
+            }
+            /* generate ip info page */
+            function generate_ipinfo(ipinfo){
+                var section = document.getElementById('adresses-IP')
+                console.log(section)
+                for (elem in ipinfo){
+                    create_frame(section, elem, ipinfo[elem])
+                }
+            }
+
+            /* frame creation */
+            function create_frame(section, frametitle, content){
+                var row = document.createElement("div")
+                row.classList.add("row")
+                var frame = document.createElement("div")
+                frame.classList.add("frame")
+                var frameTitle = document.createElement("div")
+                frameTitle.classList.add("frame-title")
+                var frameBody = document.createElement("div")
+                frameBody.classList.add("frame-body")
+                for (elem in content){
+                    var total = content['_total']
+                    if (elem!='_total'){
+                        var nb = content[elem]
+                        var percent =(nb*100)/total
+                        var title = elem.concat(": ",nb)
+                        create_progressbar(frameBody, title, percent)
+                    }
+                }
+                var title = document.createElement("div")
+                title.classList.add("h4")
+                title.innerText=frametitle
+                frameTitle.appendChild(title)
+                frame.appendChild(frameTitle)
+                frame.appendChild(frameBody)
+                row.appendChild(frame)
+                section.appendChild(row)
+            }
+
+            /* Progress Bar creation */
+            function create_progressbar(frame, titlestr, percent){
+                var title= document.createElement("h5")
+                title.innerText= titlestr
+                frame.appendChild(title)
+                var progress = document.createElement("div")
+                progress.classList.add('progress')
+                progress.classList.add('progress-margin')
+                var progressBar =document.createElement("div")
+                progressBar.classList.add('progress-bar') 
+                progressBar.classList.add('progress-bar-striped')
+                progressBar.classList.add('progress-bar-animated')
+                strpercent = "width: ".concat(percent,"%")
+                progressBar.setAttribute("style", strpercent)
+                progressBar.setAttribute("role", "progressbar")
+                progressBar.setAttribute("aria-valuemin",0)
+                progressBar.setAttribute("aria-valuemax",100)
+                progressBar.setAttribute("aria-valuenow",percent)
+                progress.appendChild(progressBar)
+                frame.appendChild(progress)
+            }
+
+        </script>
+		<script src="js/bootstrap.bundle.min.js"></script>
+		<script src="js/prism.js" data-manual></script>
+		<script src="js/custom.js"></script>
+    </body>
+</html>
