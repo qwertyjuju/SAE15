@@ -276,8 +276,31 @@ def write_xl(headers, path):
     chart.add_data(data, titles_from_data=True)
     chart.set_categories(ips)
     ws2.add_chart(chart, "D1")
+    for ip, dstips in headers.get_ipinfo().items():
+        if len(ip)>15:
+            create_ipws(wb, ip[:15], dstips)
+        else:
+            create_ipws(wb, ip, dstips)
     wb.save(path)
-            
+
+def create_ipws(wb, ip, dstips):
+    ws=wb.create_sheet(title=ip)
+    sorted_dstips= sorted(dstips.items(), key=lambda item: item[1], reverse=1)
+    for row in sorted_dstips:
+        if row[0]=="_total":
+            pass
+        else:    
+            ws.append(row)
+    chart = BarChart()
+    chart.title = ip
+    chart.y_axis.title = 'number of packets'
+    chart.x_axis.title = 'destination ip'
+    data = Reference(ws, min_col=2, min_row=1, max_row=len(sorted_dstips))
+    ips = Reference(ws, min_col=1, min_row=1, max_row=len(sorted_dstips))
+    chart.add_data(data)
+    chart.set_categories(ips)
+    ws.add_chart(chart, "D1")
+    pass
             
 def create_ip(part):
     """
