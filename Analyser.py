@@ -147,7 +147,6 @@ class Header:
         "options":"",
         "length":"",
     }
-    headers=[]
 
     def __init__(self, headerdict, line=None):
         self.data=copy.deepcopy(Header.header_content)

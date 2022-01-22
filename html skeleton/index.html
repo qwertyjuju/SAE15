@@ -159,20 +159,6 @@
                     openableFrames[i].getElementsByClassName("openable-frame-body")[0].classList.add("active");
                 }
             }
-
-            /* get json data */
-            var requestURL = window.location.href+"result.json";
-            var jsondata= null
-            var request = new XMLHttpRequest();
-            request.open('GET', requestURL);
-            request.responseType = 'json';
-            request.send();
-            request.onload = function() {
-                jsondata = request.response;
-                init_content(jsondata['ip_count'])
-                generate_ipinfo(jsondata['ip_info'])
-            }
-
             /* init ip count content from json data */
             function init_content(ipcount){
                 var ipFrameAll = document.getElementById('ipframe-all')
@@ -277,6 +263,18 @@
                 progress.appendChild(progressBar)
                 frame.appendChild(progress)
             }
+            /* get json data */
+            var requestURL = window.location.href+"result.json";
+            var jsondata= null
+            var request = new XMLHttpRequest();
+            request.open('GET', requestURL);
+            request.responseType = 'json';
+            request.onload = function() {
+                jsondata = request.response;
+                init_content(jsondata['ip_count'])
+                generate_ipinfo(jsondata['ip_info'])
+            }
+            request.send();
 
         </script>
 		<script src="js/bootstrap.bundle.min.js"></script>
